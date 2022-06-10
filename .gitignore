@@ -1,0 +1,9 @@
+#idea
+.idea
+.bsp
+
+#config
+/src/main/resources/application-local.conf
+
+project/target
+target
