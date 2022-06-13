@@ -18,5 +18,6 @@ libraryDependencies ++= Seq(
   "io.circe" %% "circe-parser" % circeVersion,
   "io.d11" %% "zhttp" % zhttpVersion,
   "dev.zio" %% "zio" % zioVersion,
+  "dev.zio" %% "zio-streams" % zioVersion,
   "com.github.pureconfig" %% "pureconfig" % pureconfigVersion,
 )
