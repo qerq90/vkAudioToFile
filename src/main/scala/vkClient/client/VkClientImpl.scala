@@ -7,10 +7,10 @@ import vkClient.client.VkClient.VkClient
 import vkClient.config.VkApiConfig
 import vkClient.model.AudioGet
 import zhttp.http.{HttpData, Method, Response}
-import zhttp.service.{ChannelFactory, Client, EventLoopGroup}
 import zio.{IO, ZIO}
+import zhttp.http.Headers
 
-class VkClientImpl extends VkClient {
+class VkClientImpl(httpClient: core.zhttp.Client.Service) extends VkClient {
 
   private val vkConfig = ConfigSource
     .resources("application-local.conf")
@@ -26,11 +26,12 @@ class VkClientImpl extends VkClient {
         s"count=$count"
     )
     for {
-      response <- Client
+      response <- httpClient
         .request(
           url = baseApiUrl + "audio.get",
           method = Method.POST,
-          content = reqBody
+          content = reqBody,
+          headers = Headers.empty
         )
       responseBody <- response.bodyAsString
       parsedBody <- ZIO
@@ -38,21 +39,24 @@ class VkClientImpl extends VkClient {
         .map(_.response
         .items
         .map(track => track.artist + " - " + track.title))
-    } yield parsedBody
+    } yield (parsedBody)
+
   }
 
   override def audioGetCount(owner_id: String):
-  ZIO[EventLoopGroup with ChannelFactory, Throwable, Response] = {
+  IO[Throwable, Int] = {
     val reqBody = HttpData.fromString(
       s"owner_id=$owner_id&" +
         s"access_token=${vkConfig.accessToken}&" +
         s"v=${vkConfig.v}"
     )
-    Client.request(
+    // write normal jsonParse, like above
+    httpClient.request(
       url = s"${baseApiUrl}audio.getCount",
       method = Method.POST,
-      content = reqBody
-    )
+      content = reqBody,
+      headers = Headers.empty,
+    ).map(_ => 1)
   }
 
 }
