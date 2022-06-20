@@ -37,8 +37,8 @@ class VkClientImpl(httpClient: core.zhttp.Client.Service) extends VkClient {
       parsedBody <- ZIO
         .fromEither(decode[AudioGet](responseBody))
         .map(_.response
-        .items
-        .map(track => track.artist + " - " + track.title))
+          .items
+          .map(track => track.artist + " - " + track.title))
     } yield (parsedBody)
 
   }
