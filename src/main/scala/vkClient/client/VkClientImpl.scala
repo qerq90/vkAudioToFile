@@ -3,14 +3,14 @@ package vkClient.client
 import pureconfig._
 import pureconfig.generic.auto._
 import io.circe.parser.{decode, parse}
-import vkClient.client.VkClient.{Env, VkClient}
+import vkClient.client.VkClient.VkClient
 import vkClient.config.VkApiConfig
-import vkClient.model.{AudioGet, AudioGetCount}
+import vkClient.model.AudioGet
 import zhttp.http.{HttpData, Method, Response}
-import zhttp.service.{ChannelFactory, Client, EventLoopGroup}
-import zio.{IO, UIO, ZIO}
+import zio.{IO, ZIO}
+import zhttp.http.Headers
 
-class VkClientImpl extends VkClient {
+class VkClientImpl(httpClient: core.zhttp.Client.Service) extends VkClient {
 
   private val vkConfig = ConfigSource
     .resources("application-local.conf")
@@ -18,46 +18,45 @@ class VkClientImpl extends VkClient {
     .loadOrThrow[VkApiConfig]
 
   override def audioGet(owner_id: String, count: Int):
-  ZIO[EventLoopGroup with ChannelFactory, Throwable, AudioGet] = {
+  IO[Throwable, List[String]] = {
     val reqBody = HttpData.fromString(
       s"owner_id=$owner_id&" +
         s"access_token=${vkConfig.accessToken}&" +
         s"v=${vkConfig.v}&" +
         s"count=$count"
     )
-
     for {
-      response <- Client.request(
+      response <- httpClient
+        .request(
           url = baseApiUrl + "audio.get",
           method = Method.POST,
-          content = reqBody
+          content = reqBody,
+          headers = Headers.empty
         )
       responseBody <- response.bodyAsString
-      answer <- ZIO
+      parsedBody <- ZIO
         .fromEither(decode[AudioGet](responseBody))
-    } yield answer
+        .map(_.response
+          .items
+          .map(track => track.artist + " - " + track.title))
+    } yield (parsedBody)
+
   }
 
   override def audioGetCount(owner_id: String):
-  ZIO[EventLoopGroup with ChannelFactory, Throwable, Int] = {
+  IO[Throwable, Int] = {
     val reqBody = HttpData.fromString(
       s"owner_id=$owner_id&" +
         s"access_token=${vkConfig.accessToken}&" +
         s"v=${vkConfig.v}"
     )
-
-    for {
-      response <- Client.request(
-        url = s"${baseApiUrl}audio.getCount",
-        method = Method.POST,
-        content = reqBody
-      )
-      responseBody <- response.bodyAsString
-      answer <- ZIO
-        .fromEither(decode[AudioGetCount](responseBody))
-        .map(_.response)
-   } yield answer
-
+    // write normal jsonParse, like above
+    httpClient.request(
+      url = s"${baseApiUrl}audio.getCount",
+      method = Method.POST,
+      content = reqBody,
+      headers = Headers.empty,
+    ).map(_ => 1)
   }
 
 }
