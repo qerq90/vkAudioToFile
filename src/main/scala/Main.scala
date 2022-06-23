@@ -5,12 +5,15 @@ import zio._
 
 object Main extends App {
 
-  private val env = VkClient.live
+  private val env = FileMaker.live ++ VkClient.live
   private val user = ""
 
   private val app = for {
     count <- VkClient.audioGetCount(user)
-    _ <- console.putStrLn(count.toString)
+    audio <- VkClient.audioGet(user, count)
+    audioList <- FileMaker.getAudioFromResponse(audio)
+    _ <- console.putStrLn(audioList.toString())
+    _ <- FileMaker.makeFile(audioList)
   } yield ()
 
 

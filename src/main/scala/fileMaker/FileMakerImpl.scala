@@ -2,10 +2,11 @@ package fileMaker
 
 import fileMaker.FileMaker.Service
 import vkClient.model.AudioGet
-import zio.nio.core.charset.Charset
-import zio.nio.core.file.Path
-import zio.{IO, ZIO}
-import zio.nio.file.Files
+import zio.IO
+import zio.stream.ZTransducer.gzip
+import zio.stream.{ZSink, ZStream}
+
+import java.nio.file.Paths
 
 class FileMakerImpl extends Service {
 
@@ -15,13 +16,13 @@ class FileMakerImpl extends Service {
       .fromEither(Right(a.response.items.map(t => t.artist + " - " + t.title)))
   }
 
-  override def makeFile(l: List[String]): IO[Throwable, Unit] = {
-    val allAudios = l.mkString("\n")
-    println(allAudios)
-    for {
-      encodeAudiosUtf8 <- Charset.Standard.utf8.encodeString(allAudios)
-      _ <- ZIO.fromEither(Right(Files.writeBytes(Path("musicFile.txt"), encodeAudiosUtf8)))
-    } yield ()
+  override def makeFile(l: List[String]): IO[Throwable, Long] = {
+    val result = l.mkString("\n")
+    println(result)
+    ZStream
+      .fromIterable(l)
+      .map(value => value.toByte)
+      .transduce(gzip())
+      .run(ZSink.fromFile(Paths.get("src/main/resources/file.txt")))
   }
-
 }
