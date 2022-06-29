@@ -58,6 +58,7 @@ class VkClientImpl(httpClient: core.zhttp.Client.Service) extends Service {
       parsedBody <- ZIO
         .fromEither(decode[AudioGetCount](responseBody))
         .map(_.response)
+        .catchAll(_ => ZIO.succeed(1))
     } yield parsedBody
   }
 
