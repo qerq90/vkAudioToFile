@@ -10,8 +10,6 @@ object VkClient {
 
   trait Service {
 
-    val baseApiUrl = "https://api.vk.com/method/"
-
     def audioGet(owner_id: String, count: Int): IO[Throwable, AudioGet]
 
     def audioGetCount(owner_id: String): IO[Throwable, Int]

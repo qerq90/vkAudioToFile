@@ -12,6 +12,8 @@ import zhttp.http.Headers
 
 class VkClientImpl(httpClient: core.zhttp.Client.Service) extends Service {
 
+  private val baseApiUrl = "https://api.vk.com/method/"
+
   private val vkConfig = ConfigSource
     .resources("application-local.conf")
     .at("vk_api")

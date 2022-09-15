@@ -11,9 +11,7 @@ object Main extends App {
   private val app = for {
     count <- VkClient.audioGetCount(user)
     audio <- VkClient.audioGet(user, count)
-    audioList <- FileMaker.getAudioFromResponse(audio)
-    _ <- console.putStrLn(audioList.toString())
-    _ <- FileMaker.makeFile(audioList)
+    _ <- FileMaker.makeFile(audio)
   } yield ()
 
 
