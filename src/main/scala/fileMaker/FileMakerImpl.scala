@@ -2,13 +2,13 @@ package fileMaker
 
 import fileMaker.FileMaker.Service
 import vkClient.model.AudioGet
+
 import zio.IO
 import zio.blocking.Blocking
-import zio.stream.ZTransducer.utf8Decode
 import zio.stream.{ZSink, ZStream}
-import zio.nio.core.charset.Charset
 
 import java.nio.file.Paths
+import java.nio.charset.StandardCharsets
 
 class FileMakerImpl extends Service {
 
@@ -22,10 +22,7 @@ class FileMakerImpl extends Service {
     val tempZSink: ZSink[Blocking, Throwable, Byte, Any, Long] =
       ZSink.fromFile(Paths.get("src/main/resources/file.txt"))
     ZStream
-      .fromIterable(result)
-      .map(value => value.toByte)
-      .transduce(Charset.Standard.utf8.newDecoder.transducer())
-      .map(value => value.toByte)
+      .fromIterable(result.getBytes(StandardCharsets.UTF_8))
       .run(tempZSink)
       .provideLayer(Blocking.live)
   }
