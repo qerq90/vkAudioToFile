@@ -1,21 +1,21 @@
-package vkClient.client
+package vkClient
 
 import pureconfig._
 import pureconfig.generic.auto._
 import io.circe.parser.decode
-import vkClient.client.VkClient.Service
+import vkClient.VkClient.Service
 import vkClient.config.VkApiConfig
 import vkClient.model.{AudioGet, AudioGetCount}
 import zhttp.http.{HttpData, Method}
 import zio.{IO, ZIO}
 import zhttp.http.Headers
 
-class VkClientImpl(httpClient: core.zhttp.Client.Service) extends Service {
+case class VkClientImpl(httpClient: core.zhttp.Client.Service) extends Service {
 
   private val baseApiUrl = "https://api.vk.com/method/"
 
   private val vkConfig = ConfigSource
-    .resources("application-local.conf")
+    .resources("application.conf")
     .at("vk_api")
     .loadOrThrow[VkApiConfig]
 

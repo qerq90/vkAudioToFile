@@ -1,8 +1,8 @@
-package vkClient.client
+package vkClient
 
-import core.zhttp.Client.ClientImpl
 import vkClient.model.AudioGet
 import zio.{Has, IO, ULayer, ZIO, ZLayer}
+import core.zhttp.Client.{ Env => zhttpServiceClient }
 
 object VkClient {
 
@@ -22,6 +22,7 @@ object VkClient {
   def audioGetCount(owner_id: String): ZIO[Env, Throwable, Int] =
     ZIO.accessM(_.get.audioGetCount(owner_id))
 
-  val live: ULayer[Env] = ZLayer.succeed(new VkClientImpl(ClientImpl))
+  val live: ZLayer[zhttpServiceClient, Nothing, Env] = 
+    ZLayer.fromService(VkClientImpl)
   
 }

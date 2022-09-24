@@ -1,11 +1,12 @@
 import fileMaker.FileMaker
-import vkClient.client.VkClient
+import vkClient.VkClient
 import zio._
+import core.zhttp.Client
 
 
 object Main extends App {
 
-  private val env = FileMaker.live ++ VkClient.live
+  private val env = FileMaker.live ++ (Client.live >>> VkClient.live)
   private val user = "" // DON'T FORGET TO ADD USER HERE
 
   private val app = for {
@@ -15,5 +16,6 @@ object Main extends App {
   } yield ()
 
 
-  override def run(args: List[String]): URIO[zio.ZEnv, ExitCode] = app.exitCode.provideCustomLayer(env)
+  override def run(args: List[String]): URIO[zio.ZEnv, ExitCode] = 
+    app.exitCode.provideCustomLayer(env)
 }
